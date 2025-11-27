@@ -1,0 +1,192 @@
+/* === ESTILO ORIGINAL DO VITE === */
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* ================================================================== */
+/*               MODAL / CÂMERA – RESPONSIVO                          */
+/* ================================================================== */
+
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  overflow-y: auto; /* se o card ficar grande, permite rolar */
+}
+
+.camera-card {
+  width: 100%;
+  max-width: 420px;
+  background: #031a0f;
+  border-radius: 24px;
+  padding: 20px 20px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.75);
+  color: #f5f5f5;
+  display: flex;
+  flex-direction: column; /* header em cima, câmera no meio, botões embaixo */
+}
+
+/* título + texto */
+
+.camera-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.camera-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.camera-header p {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* área da câmera */
+.camera-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  max-height: 60vh;       /* nunca passa de 60% da altura da tela */
+  margin-bottom: 12px;
+  flex: 1 1 auto;         /* ocupa o espaço disponível sem empurrar os botões pra fora */
+}
+
+/* vídeo da webcam */
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;    /* mostra a imagem inteira sem cortar */
+  background: #000;
+  display: block;
+}
+
+/* se algum dia quiser mexer na orientação via CSS:
+.camera-video {
+  transform: scaleX(-1);
+}
+*/
+
+/* botões de ação */
+
+.camera-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  flex-shrink: 0; /* garante que eles não sejam esmagados quando a tela for pequena */
+}
+
+/* Botões Capturar / Cancelar */
+
+.btn {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+  box-shadow: none;
+  filter: brightness(0.9);
+}
+
+.btn-primary {
+  background: #28a745;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.35);
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+/* ========================= MOBILE MUITO PEQUENO ========================= */
+
+@media (max-width: 480px) {
+  .camera-overlay {
+    padding: 0; /* usa a tela toda mesmo */
+  }
+
+  .camera-card {
+    border-radius: 0;
+    max-width: 100%;
+    min-height: 100vh; /* o card vira “tela inteira” */
+    padding: 16px 12px 12px;
+  }
+
+  .camera-wrapper {
+    max-height: 65vh; /* um pouco mais de espaço pra câmera */
+  }
+
+  .camera-header h2 {
+    font-size: 17px;
+  }
+
+  .camera-header p {
+    font-size: 12px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 9px 14px;
+  }
+}
