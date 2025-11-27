@@ -122,7 +122,7 @@ function App() {
       <div
         className="download-section"
         style={{
-          margin: "10px 0 30px 0",
+          margin: "30px 0 30px 0",
           textAlign: "center",
           width: "100%",
         }}
