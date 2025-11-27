@@ -1,160 +1,86 @@
-import React, { useRef, useEffect, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Transformer } from "react-konva";
+// src/components/CanvasEditor.jsx
+import React, { useEffect, useState } from "react";
+import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 
-const URLImage = ({ image, isSelected, onSelect, onChange, draggable, scale }) => {
-  const shapeRef = useRef();
-  const trRef = useRef();
+const CANVAS_WIDTH = 360;  // largura “visível” na tela
+const CANVAS_HEIGHT = 640; // altura “visível” na tela
 
+const CanvasEditor = ({ userImageSrc, frameImageSrc, stageRef, userScale }) => {
+  const [userImage] = useImage(userImageSrc || "", "anonymous");
+  const [frameImage] = useImage(frameImageSrc || "", "anonymous");
+
+  const [baseScale, setBaseScale] = useState(1);
+
+  // assim que a imagem do usuário carrega, calculamos um scale que faça ela caber
   useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer().batchDraw();
-    }
-  }, [isSelected]);
+    if (!userImage) return;
 
-  // Update scale when prop changes
-  useEffect(() => {
-    if (shapeRef.current) {
-      shapeRef.current.scale({ x: scale, y: scale });
-      shapeRef.current.getLayer().batchDraw();
-    }
-  }, [scale]);
+    const imgW = userImage.width;
+    const imgH = userImage.height;
 
-  return (
-    <>
-      <KonvaImage
-        image={image}
-        ref={shapeRef}
-        draggable={draggable}
-        onClick={onSelect}
-        onTap={onSelect}
-        onDragEnd={(e) => {
-          onChange({
-            x: e.target.x(),
-            y: e.target.y(),
-          });
-        }}
-        onTransformEnd={() => {
-          const node = shapeRef.current;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
+    if (!imgW || !imgH) return;
 
-          onChange({
-            x: node.x(),
-            y: node.y(),
-            scaleX,
-            scaleY,
-            rotation: node.rotation(),
-          });
-        }}
-      />
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          boundBoxFunc={(oldBox, newBox) => {
-            if (newBox.width < 5 || newBox.height < 5) {
-              return oldBox;
-            }
-            return newBox;
-          }}
-        />
-      )}
-    </>
-  );
-};
+    const scaleToFitWidth = CANVAS_WIDTH / imgW;
+    const scaleToFitHeight = CANVAS_HEIGHT / imgH;
 
-const CanvasEditor = ({ userImageSrc, frameImageSrc, stageRef, userScale = 1 }) => {
-  const [userImage] = useImage(userImageSrc);
-  const [frameImage] = useImage(frameImageSrc);
-  const [selectedId, selectShape] = useState(null);
-  const [imageState, setImageState] = useState({ x: 0, y: 0 });
+    // queremos que a imagem inteira apareça (contain)
+    const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
 
-  // tamanho lógico do design (9:16)
-  const DESIGN_WIDTH = 324;
-  const DESIGN_HEIGHT = 576;
+    setBaseScale(scale);
+  }, [userImage]);
 
-  // escala para se adaptar à largura da tela
-  const [scale, setScale] = useState(1);
-  const [stageSize, setStageSize] = useState({
-    width: DESIGN_WIDTH,
-    height: DESIGN_HEIGHT,
-  });
+  const effectiveScale = baseScale * (userScale || 1);
 
-  useEffect(() => {
-    const handleResize = () => {
-      const vw =
-        window.innerWidth ||
-        document.documentElement.clientWidth ||
-        document.body.clientWidth;
-
-      const MAX_DESKTOP_WIDTH = 380; // limite visual no desktop
-      const H_PADDING = 32; // “respiro” lateral
-
-      // largura máxima que queremos usar
-      const availableWidth = Math.min(MAX_DESKTOP_WIDTH, vw - H_PADDING);
-
-      // fator de escala relativo ao design
-      let newScale = availableWidth / DESIGN_WIDTH;
-
-      // nunca deixa maior que o tamanho original
-      if (newScale > 1) newScale = 1;
-
-      setScale(newScale);
-      setStageSize({
-        width: DESIGN_WIDTH * newScale,
-        height: DESIGN_HEIGHT * newScale,
-      });
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const checkDeselect = (e) => {
-    const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      selectShape(null);
-    }
-  };
+  const userX = userImage
+    ? (CANVAS_WIDTH - userImage.width * effectiveScale) / 2
+    : 0;
+  const userY = userImage
+    ? (CANVAS_HEIGHT - userImage.height * effectiveScale) / 2
+    : 0;
 
   return (
     <div
-      className="frame-wrapper"
+      className="frame-section-inner"
       style={{
-        width: stageSize.width,
-        height: stageSize.height,
-        border: '2px solid #fff', // White border for visibility on green bg
+        margin: "0 auto",
+        borderRadius: 24,
+        overflow: "hidden",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
       }}
     >
       <Stage
-        width={DESIGN_WIDTH}               // tamanho lógico fixo
-        height={DESIGN_HEIGHT}
-        scale={{ x: scale, y: scale }}     // escala global
-        onMouseDown={checkDeselect}
-        onTouchStart={checkDeselect}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
         ref={stageRef}
+        // deixa responsivo via CSS (o Stage em si é 360x640 lógico)
+        style={{
+          width: "100%",
+          height: "auto",
+          display: "block",
+        }}
       >
         <Layer>
-          {/* Foto do usuário (embaixo) */}
+          {/* FOTO DO USUÁRIO */}
           {userImage && (
-            <URLImage
+            <KonvaImage
               image={userImage}
-              isSelected={selectedId === "user"}
-              onSelect={() => selectShape("user")}
-              onChange={(newAttrs) => setImageState(newAttrs)}
-              draggable={true}
-              scale={userScale}
+              x={userX}
+              y={userY}
+              scaleX={effectiveScale}
+              scaleY={effectiveScale}
+              draggable
             />
           )}
 
-          {/* Moldura (por cima, cobrindo o Stage inteiro) */}
+          {/* MOLDURA FIXA POR CIMA */}
           {frameImage && (
             <KonvaImage
               image={frameImage}
-              width={DESIGN_WIDTH}
-              height={DESIGN_HEIGHT}
+              x={0}
+              y={0}
+              width={CANVAS_WIDTH}
+              height={CANVAS_HEIGHT}
               listening={false}
             />
           )}
